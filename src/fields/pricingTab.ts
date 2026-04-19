@@ -1,5 +1,7 @@
 import type { FieldHook, NumberField, Tab } from 'payload'
 
+import type { PriceComponents } from '../collections/shared.js'
+
 const toNumber = (value: unknown): number => {
   const n = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(n) ? n : 0
@@ -29,8 +31,6 @@ const computeMarkupPercent: FieldHook = ({ siblingData }) => {
   if (total <= 0 || price === null) return null
   return round2(((price - total) / total) * 100)
 }
-
-type PriceComponents = NonNullable<NumberField['admin']>['components']
 
 export type BuildPricingTabOptions = {
   priceComponents?: PriceComponents

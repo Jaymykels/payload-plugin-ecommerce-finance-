@@ -1,12 +1,15 @@
-import type { Config, Field, NumberField, Plugin } from 'payload'
+import type { Config, Field, Plugin } from 'payload'
 
 import type { EcommerceExtraOptions } from './types.js'
+import type { PriceComponents } from './collections/shared.js'
+import { buildExpensesCollection } from './collections/Expenses.js'
+import { buildInvestmentsCollection } from './collections/Investments.js'
 import { buildPricingTab } from './fields/pricingTab.js'
 
 export type { EcommerceExtraOptions } from './types.js'
+export { buildExpensesCollection } from './collections/Expenses.js'
+export { buildInvestmentsCollection } from './collections/Investments.js'
 export { buildPricingTab, pricingTab } from './fields/pricingTab.js'
-
-type PriceComponents = NonNullable<NumberField['admin']>['components']
 
 const getPriceInputComponents = (field: Field): PriceComponents | undefined => {
   if (field.type !== 'number') return undefined
@@ -58,14 +61,22 @@ export const ecommerceExtraPlugin =
   (incomingConfig: Config): Config => {
     if (options.disabled) return incomingConfig
 
-    const collections = (incomingConfig.collections ?? []).map((collection) => {
-      if (collection.slug !== 'products') return collection
-      const priceComponents = findPriceComponents(collection.fields)
-      return {
-        ...collection,
-        fields: injectPricingTab(collection.fields, priceComponents),
-      }
-    })
+    const existingCollections = incomingConfig.collections ?? []
+    const products = existingCollections.find((c) => c.slug === 'products')
+    const priceComponents = products ? findPriceComponents(products.fields) : undefined
+
+    const collections = [
+      ...existingCollections.map((collection) =>
+        collection.slug === 'products'
+          ? { ...collection, fields: injectPricingTab(collection.fields, priceComponents) }
+          : collection,
+      ),
+      buildExpensesCollection({ access: options.expenses?.access, priceComponents }),
+      buildInvestmentsCollection({
+        access: options.investments?.access,
+        priceComponents,
+      }),
+    ]
 
     return {
       ...incomingConfig,
