@@ -23,6 +23,12 @@ const EXPENSE_CATEGORIES = [
   { label: 'Insurance', value: 'insurance' },
   { label: 'Assets (Equipment)', value: 'assets' },
   { label: 'Miscellaneous', value: 'miscellaneous' },
+  { label: 'Wages / Labour', value: 'wages-labour' },
+  { label: 'Rent', value: 'rent' },
+  { label: 'Utilities', value: 'utilities' },
+  { label: 'Internet & Phone', value: 'internet-phone' },
+  { label: 'Storage / Warehouse', value: 'storage-warehouse' },
+  { label: 'Loan Repayment', value: 'loan-repayment' },
 ] as const
 
 const PAYMENT_METHODS = [
@@ -33,6 +39,13 @@ const PAYMENT_METHODS = [
   { label: 'Direct Debit', value: 'direct-debit' },
 ] as const
 
+const FREQUENCIES = [
+  { label: 'Monthly', value: 'monthly' },
+  { label: 'Quarterly', value: 'quarterly' },
+  { label: 'Annual', value: 'annual' },
+  { label: 'One-off', value: 'one-off' },
+] as const
+
 export const buildExpensesCollection = (
   { access, priceComponents }: BuildExpensesCollectionOptions = {},
 ): CollectionConfig => {
@@ -40,7 +53,7 @@ export const buildExpensesCollection = (
     slug: 'expenses',
     access: accessGate(access ?? isAuthed),
     admin: {
-      defaultColumns: ['entryNumber', 'date', 'category', 'amount', 'paymentMethod', 'description'],
+      defaultColumns: ['entryNumber', 'date', 'category', 'frequency', 'amount', 'paymentMethod', 'description'],
       group: 'Finance',
       listSearchableFields: ['description', 'category', 'paymentMethod'],
       useAsTitle: 'description',
@@ -63,6 +76,19 @@ export const buildExpensesCollection = (
             type: 'select',
             admin: { width: '50%' },
             options: [...PAYMENT_METHODS],
+            required: true,
+          },
+        ],
+      },
+      {
+        type: 'row',
+        fields: [
+          {
+            name: 'frequency',
+            type: 'select',
+            admin: { width: '50%' },
+            defaultValue: 'one-off',
+            options: [...FREQUENCIES],
             required: true,
           },
         ],
