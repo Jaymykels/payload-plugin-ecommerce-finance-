@@ -1,11 +1,6 @@
 import type { FieldHook, NumberField, Tab } from 'payload'
 
-import type { PriceComponents } from '../collections/shared.js'
-
-const toNumber = (value: unknown): number => {
-  const n = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(n) ? n : 0
-}
+import { toNumber, type PriceComponents } from '../collections/shared.js'
 
 const round2 = (n: number): number => Math.round(n * 100) / 100
 

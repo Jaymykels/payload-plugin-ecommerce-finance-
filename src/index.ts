@@ -4,11 +4,13 @@ import type { EcommerceExtraOptions } from './types.js'
 import type { PriceComponents } from './collections/shared.js'
 import { buildExpensesCollection } from './collections/Expenses.js'
 import { buildInvestmentsCollection } from './collections/Investments.js'
+import { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
 import { buildPricingTab } from './fields/pricingTab.js'
 
 export type { EcommerceExtraOptions } from './types.js'
 export { buildExpensesCollection } from './collections/Expenses.js'
 export { buildInvestmentsCollection } from './collections/Investments.js'
+export { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
 export { buildPricingTab, pricingTab } from './fields/pricingTab.js'
 
 const getPriceInputComponents = (field: Field): PriceComponents | undefined => {
@@ -74,6 +76,10 @@ export const ecommerceExtraPlugin =
       buildExpensesCollection({ access: options.expenses?.access, priceComponents }),
       buildInvestmentsCollection({
         access: options.investments?.access,
+        priceComponents,
+      }),
+      buildSupplierOrdersCollection({
+        access: options.supplierOrders?.access,
         priceComponents,
       }),
     ]

@@ -11,6 +11,11 @@ export const accessGate = (gate: Access) => ({
   update: gate,
 })
 
+export const toNumber = (value: unknown): number => {
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : 0
+}
+
 export const toYearMonth = (value: unknown): string | null => {
   if (!value) return null
   const date = value instanceof Date ? value : new Date(value as string)
@@ -40,6 +45,37 @@ export const entryNumberField = (collectionSlug: string): Field => ({
   type: 'number',
   admin: { position: 'sidebar', readOnly: true },
   hooks: { beforeChange: [makeEntryNumberHook(collectionSlug)] },
+  index: true,
+  unique: true,
+})
+
+const PO_NUMBER_PATTERN = /^PO-(\d+)$/
+const PO_NUMBER_PAD_WIDTH = 4
+
+const makePoNumberHook =
+  (collectionSlug: string): FieldHook =>
+  async ({ operation, req, value }) => {
+    if (operation !== 'create') return value
+    if (typeof value === 'string' && value.length > 0) return value
+    const latest = await req.payload.find({
+      collection: collectionSlug as never,
+      depth: 0,
+      limit: 1,
+      select: { poNumber: true } as never,
+      sort: '-poNumber',
+    })
+    const latestDoc = latest.docs[0] as { poNumber?: string } | undefined
+    const latestValue = latestDoc?.poNumber
+    const match = latestValue ? PO_NUMBER_PATTERN.exec(latestValue) : null
+    const next = (match ? parseInt(match[1]!, 10) : 0) + 1
+    return `PO-${String(next).padStart(PO_NUMBER_PAD_WIDTH, '0')}`
+  }
+
+export const poNumberField = (collectionSlug: string): Field => ({
+  name: 'poNumber',
+  type: 'text',
+  admin: { position: 'sidebar', readOnly: true },
+  hooks: { beforeChange: [makePoNumberHook(collectionSlug)] },
   index: true,
   unique: true,
 })

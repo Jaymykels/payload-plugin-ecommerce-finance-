@@ -15,4 +15,7 @@ export type EcommerceExtraOptions = {
   products?: {
     collectionOverride?: CollectionOverride
   }
+  supplierOrders?: {
+    access?: Access
+  }
 }
