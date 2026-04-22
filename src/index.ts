@@ -84,11 +84,54 @@ export const ecommerceExtraPlugin =
       }),
     ]
 
+    const admin = options.dashboardDisabled
+      ? incomingConfig.admin
+      : mergeAdminWithDashboard(incomingConfig.admin)
+
     return {
       ...incomingConfig,
+      admin,
       collections,
       onInit: async (payload) => {
         if (incomingConfig.onInit) await incomingConfig.onInit(payload)
       },
     }
   }
+
+const FINANCE_VIEW_COMPONENT = 'payload-plugin-ecommerce-extra/rsc#FinanceMonthDetail'
+const FINANCE_REDIRECT_COMPONENT =
+  'payload-plugin-ecommerce-extra/rsc#FinanceMonthDetailRedirect'
+const FINANCE_NAV_LINK_COMPONENT =
+  'payload-plugin-ecommerce-extra/client#FinanceNavLink'
+
+const mergeAdminWithDashboard = (admin: Config['admin']): Config['admin'] => {
+  const existing = admin ?? {}
+  const existingComponents = existing.components ?? {}
+  const existingAfterNavLinks = Array.isArray(existingComponents.afterNavLinks)
+    ? existingComponents.afterNavLinks
+    : existingComponents.afterNavLinks
+      ? [existingComponents.afterNavLinks]
+      : []
+
+  return {
+    ...existing,
+    components: {
+      ...existingComponents,
+      afterNavLinks: [...existingAfterNavLinks, FINANCE_NAV_LINK_COMPONENT],
+      views: {
+        ...existingComponents.views,
+        financeMonthDetail: {
+          Component: FINANCE_VIEW_COMPONENT,
+          meta: { title: 'Finance' },
+          path: '/finance/:year/:month',
+        },
+        financeRedirect: {
+          Component: FINANCE_REDIRECT_COMPONENT,
+          exact: true,
+          meta: { title: 'Finance' },
+          path: '/finance',
+        },
+      },
+    },
+  }
+}
