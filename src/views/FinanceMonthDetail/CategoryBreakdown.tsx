@@ -1,11 +1,12 @@
 import React from 'react'
-import { fmtUSD } from './format.js'
+import { makeMoneyFormatters, type ResolvedCurrency } from './format.js'
 import { TOKENS } from './tokens.js'
 
 type Cat = { label: string; value: number; src: string; dir: 'in' | 'out' }
 
 type Props = {
   categories: Cat[]
+  currency: ResolvedCurrency
 }
 
 const panelStyle: React.CSSProperties = {
@@ -21,7 +22,8 @@ const emptyStyle: React.CSSProperties = {
   fontSize: 13,
 }
 
-export function CategoryBreakdown({ categories }: Props) {
+export function CategoryBreakdown({ categories, currency }: Props) {
+  const { fmt } = makeMoneyFormatters(currency)
   const visible = categories.filter((c) => c.value > 0).sort((a, b) => b.value - a.value)
   const max = Math.max(...visible.map((c) => c.value), 1)
 
@@ -45,7 +47,7 @@ export function CategoryBreakdown({ categories }: Props) {
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: fill, borderRadius: 3, transition: 'width 0.3s' }} />
                 </div>
                 <div style={{ textAlign: 'right', fontFamily: TOKENS.monoFont, fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
-                  {fmtUSD(cat.value)}
+                  {fmt(cat.value)}
                 </div>
               </div>
             )

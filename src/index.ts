@@ -1,17 +1,22 @@
-import type { CollectionConfig, Config, Field, Plugin } from 'payload'
+import type { CollectionConfig, Config, Field, Payload, Plugin } from 'payload'
 
-import type { EcommerceFinanceOptions } from './types.js'
+import type { CurrencyOption, EcommerceFinanceOptions } from './types.js'
 import type { PriceComponents } from './collections/shared.js'
 import { buildExpensesCollection } from './collections/Expenses.js'
 import { buildInvestmentsCollection } from './collections/Investments.js'
 import { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
 import { buildPricingTab } from './fields/pricingTab.js'
+import { DEFAULT_CURRENCY, type ResolvedCurrency } from './views/FinanceMonthDetail/format.js'
 
-export type { EcommerceFinanceOptions } from './types.js'
+export type { CurrencyOption, EcommerceFinanceOptions } from './types.js'
 export { buildExpensesCollection } from './collections/Expenses.js'
 export { buildInvestmentsCollection } from './collections/Investments.js'
 export { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
 export { buildPricingTab, pricingTab } from './fields/pricingTab.js'
+
+export const getFinanceCurrency = (payload: Payload): ResolvedCurrency =>
+  (payload.config.custom?.ecommerceFinance?.currency as ResolvedCurrency | undefined) ??
+  DEFAULT_CURRENCY
 
 const getPriceInputComponents = (field: Field): PriceComponents | undefined => {
   if (field.type !== 'number') return undefined
@@ -98,15 +103,34 @@ export const ecommerceFinancePlugin =
       ? incomingConfig.admin
       : mergeAdminWithDashboard(incomingConfig.admin)
 
+    const currency = resolveCurrency(options.currency)
+
     return {
       ...incomingConfig,
       admin,
       collections,
+      custom: {
+        ...(incomingConfig.custom ?? {}),
+        ecommerceFinance: {
+          ...((incomingConfig.custom?.ecommerceFinance ?? {}) as Record<string, unknown>),
+          currency,
+        },
+      },
       onInit: async (payload) => {
         if (incomingConfig.onInit) await incomingConfig.onInit(payload)
       },
     }
   }
+
+const resolveCurrency = (option: CurrencyOption | undefined): ResolvedCurrency => {
+  if (!option) return DEFAULT_CURRENCY
+  return {
+    code: option.code,
+    symbol: option.symbol,
+    locale: option.locale,
+    decimals: option.decimals ?? 2,
+  }
+}
 
 // Matches the literal group label used by @payloadcms/plugin-ecommerce. Breaks
 // silently if upstream renames the group or switches to a translation key.

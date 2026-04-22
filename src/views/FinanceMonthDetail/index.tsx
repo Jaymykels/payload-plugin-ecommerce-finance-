@@ -12,6 +12,7 @@ import { CategoryBreakdown } from './CategoryBreakdown.js'
 import { BiggestShifts } from './BiggestShifts.js'
 import { GLOBAL_STYLES, ROOT_CLASS, TOKENS } from './tokens.js'
 import { FINANCE_PERMISSION_SLUG } from './constants.js'
+import { getFinanceCurrency } from '../../index.js'
 import { unwrapDefault } from '../../utils/esm.js'
 
 const Link = unwrapDefault<any>(LinkImport)
@@ -40,7 +41,7 @@ const parseYearMonth = (params: Params): { year: number; monthIndex: number } | 
 }
 
 const rootStyle: React.CSSProperties = {
-  padding: '26px 32px 32px',
+  padding: '0px 60px 32px',
   fontFamily: TOKENS.uiFont,
   color: TOKENS.fg,
 }
@@ -130,6 +131,8 @@ export default async function FinanceMonthDetail(props: AdminViewServerProps) {
   }
   const { year, monthIndex } = parsed
 
+  const currency = getFinanceCurrency(payload)
+
   const snapshot = await aggregate(payload, req, year)
 
   const opening = snapshot.openingBalance[monthIndex]!
@@ -182,6 +185,7 @@ export default async function FinanceMonthDetail(props: AdminViewServerProps) {
         openingBalance={snapshot.openingBalance}
         status={snapshot.status}
         adminRoute={adminRoute}
+        currency={currency}
       />
       <KpiCards
         opening={opening}
@@ -191,6 +195,7 @@ export default async function FinanceMonthDetail(props: AdminViewServerProps) {
         inflowCategoryCount={inflowCategoryCount}
         outflowCategoryCount={outflowCategoryCount}
         netCashFlow={snapshot.netCashFlow[monthIndex]!}
+        currency={currency}
       />
       <div style={panelStyle}>
         <Waterfall
@@ -199,16 +204,18 @@ export default async function FinanceMonthDetail(props: AdminViewServerProps) {
           closing={closing}
           inflows={inflowsForWaterfall}
           outflows={outflowsForWaterfall}
+          currency={currency}
         />
       </div>
       <div className="fd-two-col" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12 }}>
-        <CategoryBreakdown categories={categories} />
+        <CategoryBreakdown categories={categories} currency={currency} />
         <BiggestShifts
           prevMonthIndex={prevMonthIndex}
           diffs={diffs}
           breakEven={snapshot.breakEven[monthIndex]!}
           ratio={snapshot.ratio[monthIndex]!}
           shortfall={outflowsTotal - inflowsTotal}
+          currency={currency}
         />
       </div>
     </Shell>

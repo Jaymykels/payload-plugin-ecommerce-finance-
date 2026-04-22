@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MONTH_LONG, fmtUSDk } from './format.js'
+import { MONTH_LONG, makeMoneyFormatters, type ResolvedCurrency } from './format.js'
 import { TOKENS } from './tokens.js'
 
 type Step = {
@@ -16,6 +16,7 @@ type Props = {
   closing: number
   inflows: { label: string; value: number }[]
   outflows: { label: string; value: number }[]
+  currency: ResolvedCurrency
 }
 
 const headStyle: React.CSSProperties = {
@@ -27,7 +28,8 @@ const headStyle: React.CSSProperties = {
   flexWrap: 'wrap',
 }
 
-export function Waterfall({ monthIndex, opening, closing, inflows, outflows }: Props) {
+export function Waterfall({ monthIndex, opening, closing, inflows, outflows, currency }: Props) {
+  const { fmtK } = makeMoneyFormatters(currency)
   const steps: Step[] = [
     { label: `Opening (${MONTH_LONG[monthIndex].slice(0, 3)})`, value: opening, type: 'start' },
     ...inflows.filter((i) => i.value !== 0).map((i) => ({ label: i.label, value: i.value, type: 'flow' as const })),
@@ -99,7 +101,7 @@ export function Waterfall({ monthIndex, opening, closing, inflows, outflows }: P
               fill={TOKENS.fgFaint}
               fontFamily={TOKENS.uiFont}
             >
-              {fmtUSDk(t)}
+              {fmtK(t)}
             </text>
           </g>
         ))}
@@ -140,7 +142,7 @@ export function Waterfall({ monthIndex, opening, closing, inflows, outflows }: P
                 fontFamily={TOKENS.monoFont}
                 fontWeight={500}
               >
-                {labelPrefix}{fmtUSDk(s.value)}
+                {labelPrefix}{fmtK(s.value)}
               </text>
               {i < steps.length - 1 && (
                 <line

@@ -1,5 +1,5 @@
 import React from 'react'
-import { MONTH_LONG, fmtUSD } from './format.js'
+import { MONTH_LONG, makeMoneyFormatters, type ResolvedCurrency } from './format.js'
 import { TOKENS } from './tokens.js'
 
 type Diff = {
@@ -16,6 +16,7 @@ type Props = {
   breakEven: boolean
   ratio: number
   shortfall: number
+  currency: ResolvedCurrency
 }
 
 const panelStyle: React.CSSProperties = {
@@ -40,7 +41,8 @@ const rowStyle: React.CSSProperties = {
   gap: 12,
 }
 
-export function BiggestShifts({ prevMonthIndex, diffs, breakEven, ratio, shortfall }: Props) {
+export function BiggestShifts({ prevMonthIndex, diffs, breakEven, ratio, shortfall, currency }: Props) {
+  const { fmt } = makeMoneyFormatters(currency)
   const prevLabel = prevMonthIndex !== null ? MONTH_LONG[prevMonthIndex].slice(0, 3) : '—'
 
   return (
@@ -60,12 +62,12 @@ export function BiggestShifts({ prevMonthIndex, diffs, breakEven, ratio, shortfa
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.label}</div>
                   <div style={{ fontSize: 11, color: TOKENS.fgSoft, fontFamily: TOKENS.monoFont, marginTop: 2 }}>
-                    {fmtUSD(d.prev)} → {fmtUSD(d.cur)}
+                    {fmt(d.prev)} → {fmt(d.cur)}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, fontFamily: TOKENS.monoFont, color }}>
-                    {arrow} {sign}{fmtUSD(d.delta)}
+                    {arrow} {sign}{fmt(d.delta)}
                   </div>
                   <div style={{ fontSize: 10.5, color: TOKENS.fgFaint, fontFamily: TOKENS.monoFont }}>
                     {sign}{d.pct.toFixed(1)}%
@@ -85,7 +87,7 @@ export function BiggestShifts({ prevMonthIndex, diffs, breakEven, ratio, shortfa
           {breakEven
             ? 'Inflows cover outflows this month.'
             : shortfall > 0
-              ? `Short by ${fmtUSD(shortfall)}.`
+              ? `Short by ${fmt(shortfall)}.`
               : 'No outflows recorded yet.'}
         </div>
       </div>

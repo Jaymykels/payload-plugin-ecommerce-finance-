@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation.js'
-import { MONTHS, fmtUSDk } from './format.js'
+import { MONTHS, makeMoneyFormatters, type ResolvedCurrency } from './format.js'
 import { TOKENS } from './tokens.js'
 import type { MonthStatus } from './aggregate.js'
 
@@ -13,6 +13,7 @@ type Props = {
   openingBalance: number[]
   status: MonthStatus[]
   adminRoute: string
+  currency: ResolvedCurrency
 }
 
 const stripStyle: React.CSSProperties = {
@@ -22,8 +23,9 @@ const stripStyle: React.CSSProperties = {
   marginBottom: 14,
 }
 
-export function MonthStrip({ year, monthIndex, closingBalance, openingBalance, status, adminRoute }: Props) {
+export function MonthStrip({ year, monthIndex, closingBalance, openingBalance, status, adminRoute, currency }: Props) {
   const router = useRouter()
+  const { fmtK } = makeMoneyFormatters(currency)
 
   const maxBal = Math.max(...closingBalance, ...openingBalance, 1)
   const minBal = Math.min(...closingBalance, ...openingBalance, 0)
@@ -81,7 +83,7 @@ export function MonthStrip({ year, monthIndex, closingBalance, openingBalance, s
               <div style={barStyle} />
             </div>
             <div style={{ fontSize: 10.5, fontFamily: TOKENS.monoFont, opacity: 0.9, fontWeight: 500 }}>
-              {fmtUSDk(v)}
+              {fmtK(v)}
             </div>
           </button>
         )

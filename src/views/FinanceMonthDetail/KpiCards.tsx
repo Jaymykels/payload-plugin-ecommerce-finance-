@@ -1,5 +1,5 @@
 import React from 'react'
-import { fmtUSD } from './format.js'
+import { makeMoneyFormatters, type ResolvedCurrency } from './format.js'
 import { TOKENS } from './tokens.js'
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
   inflowCategoryCount: number
   outflowCategoryCount: number
   netCashFlow: number
+  currency: ResolvedCurrency
 }
 
 const rowStyle: React.CSSProperties = {
@@ -45,24 +46,26 @@ export function KpiCards({
   inflowCategoryCount,
   outflowCategoryCount,
   netCashFlow,
+  currency,
 }: Props) {
-  const netLabel = `${netCashFlow >= 0 ? '+' : ''}${fmtUSD(netCashFlow)} net`
+  const { fmt } = makeMoneyFormatters(currency)
+  const netLabel = `${netCashFlow >= 0 ? '+' : ''}${fmt(netCashFlow)} net`
   return (
     <div className="fd-kpi-row" style={rowStyle}>
-      <Card label="Opening" value={fmtUSD(opening)} />
+      <Card label="Opening" value={fmt(opening)} />
       <Card
         label="Inflows"
-        value={fmtUSD(inflows)}
+        value={fmt(inflows)}
         tone="good"
         hint={`${inflowCategoryCount} categor${inflowCategoryCount === 1 ? 'y' : 'ies'}`}
       />
       <Card
         label="Outflows"
-        value={fmtUSD(outflows)}
+        value={fmt(outflows)}
         tone="bad"
         hint={`${outflowCategoryCount} categor${outflowCategoryCount === 1 ? 'y' : 'ies'}`}
       />
-      <Card label="Closing" value={fmtUSD(closing)} tone="accent" hint={netLabel} />
+      <Card label="Closing" value={fmt(closing)} tone="accent" hint={netLabel} />
     </div>
   )
 }
