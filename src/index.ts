@@ -1,13 +1,13 @@
-import type { Config, Field, Plugin } from 'payload'
+import type { CollectionConfig, Config, Field, Plugin } from 'payload'
 
-import type { EcommerceExtraOptions } from './types.js'
+import type { EcommerceFinanceOptions } from './types.js'
 import type { PriceComponents } from './collections/shared.js'
 import { buildExpensesCollection } from './collections/Expenses.js'
 import { buildInvestmentsCollection } from './collections/Investments.js'
 import { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
 import { buildPricingTab } from './fields/pricingTab.js'
 
-export type { EcommerceExtraOptions } from './types.js'
+export type { EcommerceFinanceOptions } from './types.js'
 export { buildExpensesCollection } from './collections/Expenses.js'
 export { buildInvestmentsCollection } from './collections/Investments.js'
 export { buildSupplierOrdersCollection } from './collections/SupplierOrders.js'
@@ -58,8 +58,8 @@ const injectPricingTab = (
       : field,
   )
 
-export const ecommerceExtraPlugin =
-  (options: EcommerceExtraOptions = {}): Plugin =>
+export const ecommerceFinancePlugin =
+  (options: EcommerceFinanceOptions = {}): Plugin =>
   (incomingConfig: Config): Config => {
     if (options.disabled) return incomingConfig
 
@@ -67,12 +67,13 @@ export const ecommerceExtraPlugin =
     const products = existingCollections.find((c) => c.slug === 'products')
     const priceComponents = products ? findPriceComponents(products.fields) : undefined
 
-    const collections = [
-      ...existingCollections.map((collection) =>
-        collection.slug === 'products'
-          ? { ...collection, fields: injectPricingTab(collection.fields, priceComponents) }
-          : collection,
-      ),
+    const mapped = existingCollections.map((collection) =>
+      collection.slug === 'products'
+        ? { ...collection, fields: injectPricingTab(collection.fields, priceComponents) }
+        : collection,
+    )
+
+    const financeCollections = [
       buildExpensesCollection({ access: options.expenses?.access, priceComponents }),
       buildInvestmentsCollection({
         access: options.investments?.access,
@@ -83,6 +84,15 @@ export const ecommerceExtraPlugin =
         priceComponents,
       }),
     ]
+
+    // Place finance collections immediately before the first ecommerce collection
+    // so the sidebar renders Finance above Ecommerce. Assumes @payloadcms/plugin-ecommerce
+    // collections are contiguous in the config; interleaved non-ecommerce collections
+    // between them would be shifted below Finance.
+    const firstEcomIdx = mapped.findIndex(isEcommerceCollection)
+    const collections = firstEcomIdx === -1
+      ? [...mapped, ...financeCollections]
+      : [...mapped.slice(0, firstEcomIdx), ...financeCollections, ...mapped.slice(firstEcomIdx)]
 
     const admin = options.dashboardDisabled
       ? incomingConfig.admin
@@ -98,11 +108,20 @@ export const ecommerceExtraPlugin =
     }
   }
 
-const FINANCE_VIEW_COMPONENT = 'payload-plugin-ecommerce-extra/rsc#FinanceMonthDetail'
+// Matches the literal group label used by @payloadcms/plugin-ecommerce. Breaks
+// silently if upstream renames the group or switches to a translation key.
+const isEcommerceCollection = (c: CollectionConfig): boolean => {
+  const group = c.admin?.group
+  if (typeof group === 'string') return group === 'Ecommerce'
+  if (group && typeof group === 'object') return Object.values(group).some((v) => v === 'Ecommerce')
+  return false
+}
+
+const FINANCE_VIEW_COMPONENT = 'payload-plugin-ecommerce-finance/rsc#FinanceMonthDetail'
 const FINANCE_REDIRECT_COMPONENT =
-  'payload-plugin-ecommerce-extra/rsc#FinanceMonthDetailRedirect'
+  'payload-plugin-ecommerce-finance/rsc#FinanceMonthDetailRedirect'
 const FINANCE_NAV_LINK_COMPONENT =
-  'payload-plugin-ecommerce-extra/client#FinanceNavLink'
+  'payload-plugin-ecommerce-finance/client#FinanceNavLink'
 
 const mergeAdminWithDashboard = (admin: Config['admin']): Config['admin'] => {
   const existing = admin ?? {}
