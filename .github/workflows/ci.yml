@@ -30,8 +30,11 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm build
 
       - name: Verify publishable contents
-        run: pnpm pack --dry-run
+        run: npm pack --dry-run
