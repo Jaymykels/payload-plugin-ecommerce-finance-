@@ -141,11 +141,12 @@ const isEcommerceCollection = (c: CollectionConfig): boolean => {
   return false
 }
 
-const FINANCE_VIEW_COMPONENT = 'payload-plugin-ecommerce-finance/rsc#FinanceMonthDetail'
+const FINANCE_VIEW_COMPONENT =
+  '@jaymykels/payload-plugin-ecommerce-finance/rsc#FinanceMonthDetail'
 const FINANCE_REDIRECT_COMPONENT =
-  'payload-plugin-ecommerce-finance/rsc#FinanceMonthDetailRedirect'
+  '@jaymykels/payload-plugin-ecommerce-finance/rsc#FinanceMonthDetailRedirect'
 const FINANCE_NAV_LINK_COMPONENT =
-  'payload-plugin-ecommerce-finance/client#FinanceNavLink'
+  '@jaymykels/payload-plugin-ecommerce-finance/client#FinanceNavLink'
 
 const mergeAdminWithDashboard = (admin: Config['admin']): Config['admin'] => {
   const existing = admin ?? {}
