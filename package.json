@@ -1,6 +1,6 @@
 {
   "name": "@jaymykels/payload-plugin-ecommerce-finance",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Finance collections + dashboard for Payload admin. Requires @payloadcms/plugin-ecommerce.",
   "license": "MIT",
   "repository": {
